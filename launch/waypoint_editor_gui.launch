@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+ <!-- Run the map server -->
+<node pkg="map_server" name="map_server" type="map_server" args="$(find waypoint_gui)/maps/secondofficemap.yaml" output="screen" />
+
+<!-- run the waypoint editor-->
+<node pkg="waypoint_gui" name="waypoint_editor" type="waypoint_generator_node" output="screen" />
+
+<!--Run Rviz -->
+<node type="rviz" name="rviz" pkg="rviz" args="-d $(find waypoint_gui)/rviz/waypoint_rviz.rviz" />
+
+
+</launch>
