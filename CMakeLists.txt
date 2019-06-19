@@ -136,6 +136,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(custom_movements_node src/custom_movements.cpp)
 add_executable(custom_menu_node src/custom_menu.cpp)
+add_executable(waypoint_generator_node src/waypoint_generator.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -146,11 +147,16 @@ add_executable(custom_menu_node src/custom_menu.cpp)
 ## same as for the library above
 add_dependencies(custom_movements_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(custom_menu_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(waypoint_generator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 ## Specify libraries to link a library or executable target against
+
  target_link_libraries(custom_movements_node
    ${catkin_LIBRARIES}
  )
  target_link_libraries(custom_menu_node
+   ${catkin_LIBRARIES}
+ )
+ target_link_libraries(waypoint_generator_node
    ${catkin_LIBRARIES}
  )
 
