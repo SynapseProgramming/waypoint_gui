@@ -139,6 +139,7 @@ add_executable(custom_menu_node src/custom_menu.cpp)
 add_executable(waypoint_generator_node src/waypoint_generator.cpp)
 add_executable(waypoint_writer_node src/waypoint_writer.cpp)
 add_executable(phantom_marker_node src/phantom_marker.cpp)
+add_executable(waypoint_reader_node src/waypoint_reader.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -153,6 +154,7 @@ add_dependencies(custom_menu_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_E
 add_dependencies(waypoint_generator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(waypoint_writer_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(phantom_marker_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(waypoint_reader_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 ## Specify libraries to link a library or executable target against
 
  target_link_libraries(custom_movements_node
@@ -168,6 +170,9 @@ add_dependencies(phantom_marker_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catki
    ${catkin_LIBRARIES}
  )
  target_link_libraries(phantom_marker_node
+   ${catkin_LIBRARIES}
+ )
+target_link_libraries(waypoint_reader_node
    ${catkin_LIBRARIES}
  )
 
