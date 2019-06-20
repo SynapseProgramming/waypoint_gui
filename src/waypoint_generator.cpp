@@ -13,7 +13,7 @@
 using namespace visualization_msgs;
 std::ofstream outfile;
 
-
+boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
 
 void print_array(std::string array_head, std::vector<double> &array){
   outfile<<array_head<< ": [";
@@ -88,7 +88,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "simple_marker");
 outfile.open("/home/roald/catkin_ws/src/waypoint_gui/waypoints/waypoint_test.yaml");
   // create an interactive marker server on the topic namespace simple_marker
-  interactive_markers::InteractiveMarkerServer server("simple_marker");
+  server.reset( new interactive_markers::InteractiveMarkerServer("simple_marker","",false) );
  //create an instance of the menu handler object
   interactive_markers::MenuHandler menu_handler;
   //create menu windows
@@ -163,12 +163,12 @@ outfile.open("/home/roald/catkin_ws/src/waypoint_gui/waypoints/waypoint_test.yam
 
   // add the interactive marker to our collection &
   // tell the server to call processFeedback() when feedback arrives for it
-  server.insert(int_marker, &processFeedback);
+  server->insert(int_marker, &processFeedback);
   //copy current menu state into the marker
-  menu_handler.apply(server,int_marker.name);
+  menu_handler.apply(*server,int_marker.name);
 
   // 'commit' changes and send to all clients
-  server.applyChanges();
+  server->applyChanges();
 
   // start the ROS main loop
   ros::spin();
