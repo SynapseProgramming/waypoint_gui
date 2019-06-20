@@ -15,6 +15,52 @@ std::ofstream outfile;
 
 boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
 
+void place_phantom_marker(double px,double py,double qz,double qw,int index,int title){
+  // create an interactive marker for our server
+  std::string description;
+  if(title==1){description="Goal:"+std::to_string(index);}
+  else if(title==2){description="Door_Goal:"+std::to_string(index);}
+
+  visualization_msgs::InteractiveMarker int_marker;
+  int_marker.header.frame_id = "map";
+  int_marker.header.stamp=ros::Time::now();
+  int_marker.name = description;
+  int_marker.description = description;
+
+ //set the position of the interactive marker
+ int_marker.pose.position.x=px;
+ int_marker.pose.position.y=py;
+ int_marker.pose.position.z=0.0;
+ int_marker.pose.orientation.x=0.0;
+ int_marker.pose.orientation.y=0.0;
+ int_marker.pose.orientation.z=qz;
+ int_marker.pose.orientation.w=qw;
+
+//create a arrow marker
+  visualization_msgs::Marker box_marker;
+  box_marker.type = visualization_msgs::Marker::ARROW;
+  box_marker.scale.x = 0.45;
+  box_marker.scale.y = 0.2;
+  box_marker.scale.z = 0.2;
+  box_marker.color.r = 0.0f;
+  box_marker.color.g = 1.0f;
+  box_marker.color.b = 0.0f;
+  box_marker.color.a = 1.0;
+
+  // create a non-interactive control which contains the arrow
+  visualization_msgs::InteractiveMarkerControl box_control;
+  box_control.always_visible = true;
+  //place the grey box marker visualization into the non interactive control.
+  box_control.markers.push_back( box_marker );
+
+  // add the control to the interactive marker
+  int_marker.controls.push_back( box_control );
+  //update the server
+  server->insert(int_marker);
+  server->applyChanges();
+
+}
+
 void print_array(std::string array_head, std::vector<double> &array){
   outfile<<array_head<< ": [";
   for(unsigned int i=0; i<array.size();i++){
@@ -24,6 +70,7 @@ void print_array(std::string array_head, std::vector<double> &array){
   }
 }
 
+//place_phantom_marker(double px,double py,double qz,double qw,int index,int title)
 void processFeedback(
     const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
 {
@@ -53,6 +100,7 @@ case visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT:
   z_vect.push_back(z);
   w_vect.push_back(w);
   int goal_vect_size=x_vect.size();
+  place_phantom_marker(x,y,z,w,goal_vect_size,1);
   ROS_WARN("GOAL AT THIS LOCATION HAS BEEN SAVED. NET GOALS: %d",goal_vect_size);
   }
   else if(feedback->menu_entry_id==2){// if Set as door Goal is selected, save door goals
@@ -61,6 +109,7 @@ case visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT:
     z_door_vect.push_back(z);
     w_door_vect.push_back(w);
     int doorgoal_vect_size=x_door_vect.size();
+  place_phantom_marker(x,y,z,w,doorgoal_vect_size,2);
   ROS_WARN("DOOR GOAL AT THIS LOCATION HAS BEEN SAVED. NET DOOR GOALS: %d",doorgoal_vect_size);
   }
   else if(feedback->menu_entry_id==3){//if Save all Goals is selected, save all goals into text file
