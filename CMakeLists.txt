@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(waypoint_gui)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -138,6 +138,7 @@ add_executable(custom_movements_node src/custom_movements.cpp)
 add_executable(custom_menu_node src/custom_menu.cpp)
 add_executable(waypoint_generator_node src/waypoint_generator.cpp)
 add_executable(waypoint_writer_node src/waypoint_writer.cpp)
+add_executable(phantom_marker_node src/phantom_marker.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -151,6 +152,7 @@ add_dependencies(custom_movements_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${cat
 add_dependencies(custom_menu_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(waypoint_generator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(waypoint_writer_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(phantom_marker_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 ## Specify libraries to link a library or executable target against
 
  target_link_libraries(custom_movements_node
@@ -165,6 +167,10 @@ add_dependencies(waypoint_writer_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
  target_link_libraries(waypoint_writer_node
    ${catkin_LIBRARIES}
  )
+ target_link_libraries(phantom_marker_node
+   ${catkin_LIBRARIES}
+ )
+
 
 #############
 ## Install ##
