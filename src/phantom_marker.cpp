@@ -14,15 +14,25 @@
 using namespace visualization_msgs;
 
 boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
+boost::shared_ptr<interactive_markers::MenuHandler> menu_handler;
 
 void processFeedback(
     const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
 {
-  ROS_INFO_STREAM( feedback->marker_name << " is now at x: "
-      << feedback->pose.position.x << ", y: " << feedback->pose.position.y
-      << ", z: " << feedback->pose.position.z << "orientation: z: "<<feedback->pose.orientation.z<<", w: "<<feedback->pose.orientation.w );
-}
+switch(feedback->event_type){
 
+case visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE:
+ROS_INFO_STREAM( feedback->marker_name << " is now at x: "
+    << feedback->pose.position.x << ", y: " << feedback->pose.position.y
+    << ", z: " << feedback->pose.position.z << "orientation: z: "<<feedback->pose.orientation.z<<", w: "<<feedback->pose.orientation.w );
+break;
+
+case visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT:
+  ROS_INFO_STREAM(feedback->marker_name<< ": menu item " << feedback->menu_entry_id);
+  break;
+}//switch statement bracket
+
+}//process feedback bracket
 void place_phantom_marker(double px,double py,double qz,double qw,int index,int title){
   // create an interactive marker for our server
   std::string description;
@@ -45,24 +55,27 @@ void place_phantom_marker(double px,double py,double qz,double qw,int index,int 
  int_marker.pose.orientation.w=qw;
 
 //create a arrow marker
-  visualization_msgs::Marker box_marker;
-  box_marker.type = visualization_msgs::Marker::ARROW;
-  box_marker.scale.x = 0.45;
-  box_marker.scale.y = 0.2;
-  box_marker.scale.z = 0.2;
-  box_marker.color.r = 0.0f;
-  box_marker.color.g = 1.0f;
-  box_marker.color.b = 0.0f;
-  box_marker.color.a = 1.0;
+visualization_msgs::Marker box_marker;
+box_marker.type = visualization_msgs::Marker::ARROW;
+box_marker.scale.x = 0.45;
+box_marker.scale.y = 0.2;
+box_marker.scale.z = 0.2;
+box_marker.color.r = 0.0f;
+box_marker.color.g = 1.0f;
+box_marker.color.b = 0.0f;
+box_marker.color.a = 1.0;
 
-  // create a non-interactive control which contains the arrow
-  visualization_msgs::InteractiveMarkerControl box_control;
-  box_control.always_visible = true;
-  //place the grey box marker visualization into the non interactive control.
-  box_control.markers.push_back( box_marker );
+//create a control for the menu system
+visualization_msgs::InteractiveMarkerControl box_control;
+//declare that the control is a menu kind
+box_control.interaction_mode=InteractiveMarkerControl::MENU;
+box_control.name="menu control";
+box_control.always_visible = true;
+//place the grey box marker visualization into the box_control.
+box_control.markers.push_back( box_marker );
 
-  // add the control to the interactive marker
-  int_marker.controls.push_back( box_control );
+// add the control to the interactive marker
+int_marker.controls.push_back( box_control );
 
   visualization_msgs::InteractiveMarkerControl main_control;
 
@@ -95,6 +108,7 @@ void place_phantom_marker(double px,double py,double qz,double qw,int index,int 
   // add the interactive marker to our collection &
   // tell the server to call processFeedback() when feedback arrives for it
   server->insert(int_marker, &processFeedback);
+  menu_handler->apply(*server,int_marker.name);
   server->applyChanges();
 
 }
@@ -107,7 +121,12 @@ int main(int argc, char** argv)
 
   // create an interactive marker server on the topic namespace simple_marker
   server.reset( new interactive_markers::InteractiveMarkerServer("simple_marker","",false) );
+  menu_handler.reset(new interactive_markers::MenuHandler);
 
+  //create menu windows
+  menu_handler->insert( "Set as Goal", &processFeedback );
+  menu_handler->insert( "Set as Door Goal", &processFeedback );
+  menu_handler->insert( "Save all Goals", &processFeedback );
 
   place_phantom_marker(1,0,1,0,1,1);
   place_phantom_marker(2,0,1,0,2,2);
