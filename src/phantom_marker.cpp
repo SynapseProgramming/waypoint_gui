@@ -1,11 +1,27 @@
 
 #include <ros/ros.h>
-#include <iostream>
+
 #include <interactive_markers/interactive_marker_server.h>
+#include <interactive_markers/menu_handler.h>
+
+#include <tf/transform_broadcaster.h>
+#include <tf/tf.h>
+#include <iostream>
+#include <math.h>
+#include <fstream>
+#include <vector>
+
+using namespace visualization_msgs;
 
 boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
 
-
+void processFeedback(
+    const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback )
+{
+  ROS_INFO_STREAM( feedback->marker_name << " is now at x: "
+      << feedback->pose.position.x << ", y: " << feedback->pose.position.y
+      << ", z: " << feedback->pose.position.z << "orientation: z: "<<feedback->pose.orientation.z<<", w: "<<feedback->pose.orientation.w );
+}
 
 void place_phantom_marker(double px,double py,double qz,double qw,int index,int title){
   // create an interactive marker for our server
@@ -47,38 +63,61 @@ void place_phantom_marker(double px,double py,double qz,double qw,int index,int 
 
   // add the control to the interactive marker
   int_marker.controls.push_back( box_control );
-  //update the server
-  server->insert(int_marker);
+
+  visualization_msgs::InteractiveMarkerControl main_control;
+
+  main_control.orientation_mode = InteractiveMarkerControl::FIXED;
+
+ //set x controls
+  tf::Quaternion orien(1.0, 0.0, 0.0, 1.0);
+  orien.normalize();
+  tf::quaternionTFToMsg(orien, main_control.orientation);
+  main_control.name = "move_x";
+  main_control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+  int_marker.controls.push_back(main_control);
+
+  //set y controls
+   orien = tf::Quaternion(0.0, 0.0, 1.0, 1.0);
+   orien.normalize();
+   tf::quaternionTFToMsg(orien, main_control.orientation);
+   main_control.name = "move_y";
+   main_control.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+   int_marker.controls.push_back(main_control);
+
+   //set rotation about z axis
+   orien = tf::Quaternion(0.0, 1.0, 0.0, 1.0);
+   orien.normalize();
+   tf::quaternionTFToMsg(orien, main_control.orientation);
+   main_control.name = "rotate_z";
+   main_control.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+   int_marker.controls.push_back(main_control);
+
+  // add the interactive marker to our collection &
+  // tell the server to call processFeedback() when feedback arrives for it
+  server->insert(int_marker, &processFeedback);
+  server->applyChanges();
 
 }
+
 
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "simple_marker");
-  double x=0,y=0,z=0,w=0;
+
   // create an interactive marker server on the topic namespace simple_marker
   server.reset( new interactive_markers::InteractiveMarkerServer("simple_marker","",false) );
-  int count=0;
-  int title=0;
-  while(ros::ok()){
+
+
+  place_phantom_marker(1,0,1,0,1,1);
+  place_phantom_marker(2,0,1,0,2,2);
 
 
 
-  std::cout<<"Please enter the x,y,z,w position values!"<<std::endl;
-  std::cin>>x>>y>>z>>w;
-  std::cout<<"please enter 1. for the (goal), and enter 2 for (door_goal)"<<std::endl;
-  std::cin>>title;
-  place_phantom_marker(x,y,z,w,count,title);
-
-  count++;
-
-  // 'commit' changes and send to all clients
-  server->applyChanges();
 
   // start the ROS main loop
-  ros::spinOnce();
+  ros::spin();
 
-  }
+
 }
 // %Tag(fullSource)%
