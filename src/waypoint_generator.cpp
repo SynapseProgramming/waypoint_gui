@@ -19,6 +19,7 @@ void processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr
 //global variables here!
 std::ofstream outfile;
 boost::shared_ptr<interactive_markers::InteractiveMarkerServer> server;
+std::string file_path;
 //create vectors to store waypoint info from text file
 std::vector<double> x_vect,y_vect,z_vect,w_vect;
 std::vector<double> x_door_vect,y_door_vect,z_door_vect,w_door_vect;
@@ -213,7 +214,8 @@ case visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT:
   ROS_WARN("DOOR GOAL AT THIS LOCATION HAS BEEN SAVED. NET DOOR GOALS: %d",doorgoal_vect_size);
   }
   else if(feedback->menu_entry_id==3){//if Save all Goals is selected, save all goals into text file
-  outfile.open("/home/roald/catkin_ws/src/waypoint_gui/waypoints/waypoint_test.yaml");
+  outfile.open(file_path);
+  if(outfile.is_open()){
   print_array("x",x_vect);
   print_array("y",y_vect);
   print_array("z",z_vect);
@@ -225,6 +227,12 @@ case visualization_msgs::InteractiveMarkerFeedback::MENU_SELECT:
   print_array("dw",w_door_vect);
   ROS_WARN("All locations have been saved!");
   outfile.close();
+}
+else{
+  ROS_FATAL("Could not find waypoints file. Please check file path!\n");
+  //kill the node, since we could not load the file(critical)
+  ros::shutdown();
+}
   }
   break;
 
@@ -246,6 +254,9 @@ int main(int argc, char** argv)
   menu_handler.insert( "Set as Goal", &processFeedback );
   menu_handler.insert( "Set as Door Goal", &processFeedback );
   menu_handler.insert( "Save all Goals", &processFeedback );
+
+  //obtain the filepath of waypoints file
+  n.getParam("file_path",file_path);
 
   //read in the params
   n.getParam("x",x_vect);

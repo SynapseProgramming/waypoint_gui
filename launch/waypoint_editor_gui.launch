@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-
+<!--load waypoints file-->
 <rosparam file="$(find waypoint_gui)/waypoints/waypoint_test.yaml" command="load"/>
+<!--load filepath-->
+<rosparam file="$(find waypoint_gui)/param/waypoint_filepath.yaml" command="load"/>
 
  <!-- Run the map server -->
 <node pkg="map_server" name="map_server" type="map_server" args="$(find waypoint_gui)/maps/secondofficemap.yaml" output="screen" />
